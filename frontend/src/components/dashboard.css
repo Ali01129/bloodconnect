@@ -1,0 +1,61 @@
+
+.text{
+    font-size: 120px;
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+    transition: letter-spacing 0.8s ease-in-out;
+}
+.text:hover {
+    letter-spacing: 3px;
+}
+.searchbar{
+    width: 30%;
+    height: 40px;
+    text-align: center;
+    border-radius: 5px;
+}
+.group{
+    border: none;
+    height: 45px;
+    border-radius: 4px;
+    background-color: #dfdede;
+    margin-right: 3px;
+}
+.group:active {
+    background-color: white;
+}
+
+
+  
+
+@media (max-width:992px){
+    .text{
+        font-size: 100px;
+    }
+    .searchbar{
+        width: 50%;
+    }
+}
+@media (max-width:768px){
+    .text{
+        font-size: 70px;
+    }
+    .searchbar{
+        width: 70%;
+    }
+}
+@media (max-width:476px){
+    .text{
+        font-size: 47px;
+    }
+    .searchbar{
+        width: 80%;
+    }
+    .group{
+        height: 32px;
+        width: 15px;
+        font-size: 12px;
+        text-align: center;
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "builds": [
+      {
+        "src": "./db_connect.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/.*",
+        "dest": "db_connect.js"
+      }
+    ]
+  }
