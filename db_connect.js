@@ -14,7 +14,7 @@ mongoose.connect("mongodb+srv://ali:alinawaz1@cluster0.pc6svvj.mongodb.net/blood
   });
 
 const app = express();
-const port = 5000;
+const port = 3000;
 app.use(cors());
 
 // Middleware for parsing JSON request bodies

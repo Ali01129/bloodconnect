@@ -30,7 +30,7 @@
 .card-title{
   color: black;
   font-weight: bold;
-  /* font-size: 35px; */
+  font-size: 35px;
 }
 
 .button2 {
@@ -126,6 +126,22 @@
   }
   .card-title{
     font-size: 25px;
+  }
+  .button2{
+    width: 120px;
+    font-size: 12px;
+  }
+  .button2 > svg {
+    height: 20px;
+    margin-top: -1.7px;
+  }
+}
+@media (max-width:400px){
+  .card{
+    width: 21rem;
+  }
+  .card-title{
+    font-size: 15px;
   }
   .button2{
     width: 120px;
