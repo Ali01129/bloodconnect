@@ -14,17 +14,18 @@ mongoose.connect("mongodb+srv://ali:alinawaz1@cluster0.pc6svvj.mongodb.net/blood
   });
 
 const app = express();
-const port = 3000;
+const port = 5000;
 app.use(cors());
 
 // Middleware for parsing JSON request bodies
 app.use(express.json());
+
 //for running frontend with backend
-// making frontend run with nodemon
 app.get("/", (req, res) => {
   app.use(express.static(path.resolve(__dirname, "frontend", "build")));
   res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"));
 });
+
 // Route for /api/sharenote
 app.use('/api/getdonor', forDonors);
 

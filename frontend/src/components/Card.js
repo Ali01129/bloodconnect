@@ -11,7 +11,7 @@ const Card = (props) => {
     <div key={index} className="card" >
         <div className="card-body">
             <div className="dismiss">{city?city:"Unknown"}</div>
-            <div className="card-title" style={{ fontSize: name.length > 17 ? "19px" : "35px" }}>{name}</div>
+            <div className={`card-title ${name.length > 17 ? 'large' : ''}`}>{name}</div>
             <div className='bg'style={{fontWeight:"bold"}}>Blood Group:<span className='p-2' style={{color:"red"}}>{group}</span></div>
             <p className='my-2' style={{ fontWeight: 'bold', whiteSpace: 'pre-line' }}>
                 {`Phone Numbers:\n${ph1}\n${ph2}`}

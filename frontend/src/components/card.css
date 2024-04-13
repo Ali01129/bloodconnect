@@ -9,6 +9,12 @@
   border-radius: 10px;
   border: 1px solid rgba( 255, 255, 255, 0.18 );
 }
+.card-title{
+  font-size: 35px;
+}
+.card-title.large{
+  font-size: 19px;
+}
 .dismiss {
   position: absolute;
   right: 10px;
@@ -119,13 +125,16 @@
   .card{
     width: 18rem;
   }
+  .card-title{
+    font-size: 20px;
+  }
 }
 @media (max-width:992px){
   .card{
-    width: 19rem;
+    width: 21rem;
   }
   .card-title{
-    font-size: 25px;
+    font-size: 20px;
   }
   .button2{
     width: 120px;
@@ -141,7 +150,7 @@
     width: 21rem;
   }
   .card-title{
-    font-size: 15px;
+    font-size: 18px;
   }
   .button2{
     width: 120px;

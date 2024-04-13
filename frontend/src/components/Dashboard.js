@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import './dashboard.css';
 import Card from './Card';
 import Navbar from './Navbar';
+import Spinner from './Spinner';
 
 const Dashboard = () => {
     const [donors, setDonors] = useState([]);
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [toshow, setToshow] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -24,15 +26,18 @@ const Dashboard = () => {
     }
 
     const fetchData = async () => {
+        setLoading(true);
         const response = await fetch(`${window.location.origin}/api/getdonor/viewdonor?page=${page}`, {
             method: 'POST'
         });
         const data = await response.json();
         setDonors(data.donors);
+        setLoading(false);
     }
 
     const handleKeyDown = async (event) => {
         if (event.key === 'Enter') {
+            setLoading(true);
             if (search === '') {
                 fetchData();
             } else {
@@ -45,12 +50,14 @@ const Dashboard = () => {
                 });
                 const data = await response.json();
                 setDonors(data.donors);
+                setLoading(false);
                 setPage(1);
             }
         }
     }
 
     const handleClick = async (event) => {
+        setLoading(true);
         const buttonText = event.target.textContent;
         const response = await fetch(`${window.location.origin}/api/getdonor/searchgroup`, {
             method: 'POST',
@@ -61,6 +68,7 @@ const Dashboard = () => {
         });
         const data = await response.json();
         setDonors(data.donors);
+        setLoading(false);
         setPage(1);
     }
 
@@ -96,6 +104,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                 </div>
+                {loading&&<Spinner/>}
                 <div className="container custom-container">
                     <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                         {toshow.map((element, index) => {
