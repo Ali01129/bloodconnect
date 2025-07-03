@@ -1,7 +1,5 @@
-import React from 'react';
-import Home from './components/Home';
-import Dashboard from './components/Dashboard';
-import Register from './components/register';
+import Dashboard from './pages/Dashboard';
+import Register from './pages/register';
 import {
   BrowserRouter as Router,
   Routes,
@@ -15,7 +13,6 @@ const App = () => {
       <Router>
         <Routes>
           <Route exact path="/" element={<Dashboard/>} />
-          <Route path="/home" element={<Home />} />
           <Route path="/register" element={<Register />} />
         </Routes>
       </Router>
