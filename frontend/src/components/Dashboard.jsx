@@ -13,7 +13,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         fetchData();
-    }, []); // Fetch initial data when component mounts
+    }, []);
 
     useEffect(() => {
         updateData();
@@ -27,7 +27,8 @@ const Dashboard = () => {
 
     const fetchData = async () => {
         setLoading(true);
-        const response = await fetch(`${window.location.origin}/api/getdonor/viewdonor?page=${page}`, {
+        // const response = await fetch(`${window.location.origin}/api/getdonor/viewdonor?page=${page}`, {
+        const response = await fetch(`http://localhost:5000/api/getdonor/viewdonor?page=${page}`, {
             method: 'POST'
         });
         const data = await response.json();
