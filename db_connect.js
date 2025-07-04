@@ -21,10 +21,12 @@ app.use(cors());
 app.use(express.json());
 
 //for running frontend with backend
-app.get("/", (req, res) => {
-  app.use(express.static(path.resolve(__dirname, "frontend", "build")));
-  res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"));
+app.use(express.static(path.resolve(__dirname, "frontend", "dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
 });
+
 
 // Route for /api/sharenote
 app.use('/api/getdonor', forDonors);
