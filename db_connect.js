@@ -21,9 +21,8 @@ app.use(cors());
 app.use(express.json());
 
 //for running frontend with backend
-app.use(express.static(path.resolve(__dirname, "frontend", "dist")));
-
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
+  app.use(express.static(path.resolve(__dirname, "frontend", "dist")));
   res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
 });
 
