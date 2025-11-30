@@ -7,6 +7,7 @@ import {
   Routes,
   Route
 } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 
 const App = () => {
 
@@ -19,6 +20,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
         </Routes>
       </Router>
+      <Analytics />
     </>
   );
 }
