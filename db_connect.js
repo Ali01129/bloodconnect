@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const forDonors = require('./routes/getdonors');
@@ -5,7 +6,7 @@ const cors = require('cors');
 const path = require("path");
 
 
-mongoose.connect("mongodb+srv://ali:ali@cluster0.pc6svvj.mongodb.net/bloodconnect?retryWrites=true&w=majority&appName=Cluster0")
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('MongoDB connected successfully');
   })
