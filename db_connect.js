@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require("path");
 
 
-mongoose.connect("mongodb+srv://ali:alinawaz1@cluster0.pc6svvj.mongodb.net/bloodconnect?retryWrites=true&w=majority&appName=Cluster0")
+mongoose.connect("mongodb+srv://ali:ali@cluster0.pc6svvj.mongodb.net/bloodconnect?retryWrites=true&w=majority&appName=Cluster0")
   .then(() => {
     console.log('MongoDB connected successfully');
   })
