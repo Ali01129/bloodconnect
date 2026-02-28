@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Navbar from "./Navbar";
 
 export default function Register() {
   const router = useRouter();
@@ -11,9 +12,6 @@ export default function Register() {
   const [ph1, setPh1] = useState("");
   const [ph2, setPh2] = useState("");
   const [error, setError] = useState("");
-
-  const godash = () => router.push("/");
-  const goreg = () => router.push("/register");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,34 +50,7 @@ export default function Register() {
 
   return (
     <>
-      <div className="w-full my-2">
-        <nav className="flex items-center justify-between px-4">
-          <button
-            type="button"
-            onClick={godash}
-            className="font-bold text-[rgb(191,52,52)] text-3xl font-['Bungee_Spice'] hover:opacity-90"
-          >
-            BloodConnect
-          </button>
-          <div className="flex gap-4 font-['Signika',sans-serif]">
-            <button
-              type="button"
-              onClick={godash}
-              className="text-black hover:text-red-500 transition-colors"
-            >
-              Home
-            </button>
-            <button
-              type="button"
-              onClick={goreg}
-              className="text-black hover:text-red-500 transition-colors"
-            >
-              Register
-            </button>
-            <span className="text-gray-500">Made by Ali Nawaz</span>
-          </div>
-        </nav>
-      </div>
+      <Navbar />
       <div className="flex justify-center items-center flex-col p-5 max-w-full mx-auto">
         <div className="mt-8 w-[400px] max-[400px]:w-[300px] max-[400px]:ml-12 relative text-center">
           <div className="flex flex-col justify-center gap-5 p-5 rounded-md border-2 border-[#323232] shadow-[4px_4px_#323232] bg-gray-300">

@@ -135,7 +135,7 @@ export default function Dashboard() {
                   key={group}
                   type="button"
                   onClick={handleClick}
-                  className="h-10 px-5 rounded-full text-sm font-semibold border-2 border-stone-200 bg-white text-stone-700 hover:border-[#c41e3a]/50 hover:bg-[#c41e3a]/5 hover:text-[#c41e3a] active:border-[#c41e3a] active:bg-[#c41e3a]/10 transition-all duration-200"
+                  className="h-10 px-5 rounded-full text-sm font-semibold border-2 border-stone-200 bg-white text-stone-700 hover:border-[#c41e3a]/50 hover:bg-[#c41e3a]/5 hover:text-[#c41e3a] active:border-[#c41e3a] active:bg-[#c41e3a]/10 transition-all duration-200 cursor-pointer"
                 >
                   {group}
                 </button>
@@ -176,7 +176,7 @@ export default function Dashboard() {
             type="button"
             disabled={page <= 1}
             onClick={previousClick}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -190,7 +190,7 @@ export default function Dashboard() {
             type="button"
             disabled={donors.length <= page * 21}
             onClick={nextClick}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#c41e3a] text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#9a1830] transition-all shadow-md shadow-[#c41e3a]/25"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#c41e3a] text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#9a1830] transition-all shadow-md shadow-[#c41e3a]/25 cursor-pointer"
           >
             Next
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
