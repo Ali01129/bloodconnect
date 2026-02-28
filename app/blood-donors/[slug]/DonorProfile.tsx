@@ -2,8 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getDonorSlug } from "@/lib/slug";
 import Navbar from "@/app/components/Navbar";
+import ConfirmModal from "@/app/components/ConfirmModal";
+
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
+const inputClass =
+  "w-full px-4 py-3 text-[15px] text-[var(--blood-text)] bg-white border border-stone-200 rounded-xl outline-none transition-all placeholder:text-stone-400 hover:border-stone-300 focus:border-[var(--blood-primary)] focus:ring-[3px] focus:ring-[var(--blood-primary)]/20";
 
 interface Donor {
   _id: string;
@@ -12,23 +18,47 @@ interface Donor {
   city: string;
   phone1?: string;
   phone2?: string;
+  email?: string;
+  aboutDonor?: string;
+  donationHistory?: string;
 }
 
 interface DonorProfileProps {
   donor: Donor;
   slug: string;
+  isOwner?: boolean;
 }
 
-const FALLBACK_ABOUT =
-  "This donor is registered on Blood Connect and is willing to help when in need. Contact them to confirm availability and eligibility.";
-const FALLBACK_HISTORY =
-  "Donation history is not recorded yet. This donor may have donated in the past outside the platform.";
-
-export default function DonorProfile({ donor, slug }: DonorProfileProps) {
+export default function DonorProfile({ donor: initialDonor, slug, isOwner }: DonorProfileProps) {
+  const [donor, setDonor] = useState<Donor>(initialDonor);
   const [similarDonors, setSimilarDonors] = useState<Donor[]>([]);
   const [copied, setCopied] = useState(false);
   const [profileUrl, setProfileUrl] = useState(`/blood-donors/${slug}`);
   const [copyKey, setCopyKey] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [donationDates, setDonationDates] = useState<string[]>([""]);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setDonor(initialDonor);
+  }, [initialDonor]);
+
+  const addDonationDate = () => setDonationDates((prev) => [...prev, ""]);
+  const setDonationDateAt = (index: number, value: string) => {
+    setDonationDates((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  };
+  const removeDonationDate = (index: number) => {
+    if (donationDates.length <= 1) return;
+    setDonationDates((prev) => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     setProfileUrl(`${window.location.origin}/blood-donors/${slug}`);
@@ -63,8 +93,80 @@ export default function DonorProfile({ donor, slug }: DonorProfileProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDeleteProfileConfirm = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/auth/delete-profile", { method: "DELETE" });
+      if (res.ok) {
+        setDeleteConfirmOpen(false);
+        router.push("/");
+        router.refresh();
+      } else {
+        const data = await res.json();
+        setEditError(data.error || "Failed to delete profile.");
+      }
+    } catch {
+      setEditError("Something went wrong. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const startEditing = () => {
+    setEditError("");
+    const history = initialDonor.donationHistory?.trim();
+    if (history) {
+      const parsed = history.split(",").map((d) => d.trim()).filter(Boolean);
+      setDonationDates(parsed.length > 0 ? parsed : [""]);
+    } else {
+      setDonationDates([""]);
+    }
+    setEditing(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditError("");
+    setSaving(true);
+    try {
+      const form = e.currentTarget;
+      const get = (name: string) => (form.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | null)?.value ?? "";
+      const res = await fetch("/api/getdonor/updatedonor", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: get("name").trim(),
+          group: get("group"),
+          city: get("city").trim(),
+          phone1: get("phone1").trim(),
+          phone2: get("phone2").trim() || undefined,
+          phoneIsWhatsApp: (form.querySelector("[name=phoneIsWhatsApp]") as HTMLInputElement)?.checked ?? true,
+          aboutDonor: get("aboutDonor").trim() || undefined,
+          donationHistory: donationDates.filter((d) => d.trim() !== "").join(", ") || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.donor) {
+        setDonor(data.donor);
+        setEditing(false);
+        router.refresh();
+      } else {
+        setEditError(data.error || "Failed to update profile.");
+      }
+    } catch {
+      setEditError("Something went wrong. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const phones = [donor.phone1, donor.phone2].filter(Boolean);
-  const hasContact = phones.length > 0;
+  const hasContact = phones.length > 0 || !!donor.email;
+
+  const FALLBACK_ABOUT =
+    "This donor is registered on Blood Connect and is willing to help when in need. They have not added more details yet. Contact them to confirm availability and eligibility.";
+  const FALLBACK_DONATION_HISTORY =
+    "Donation history has not been added yet. This donor may have donated in the past outside the platform.";
 
   return (
     <>
@@ -92,6 +194,141 @@ export default function DonorProfile({ donor, slug }: DonorProfileProps) {
           </svg>
           Back to donors
         </Link>
+
+        {isOwner && (
+          <div className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+            {!editing ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <p className="text-stone-600 font-medium">You are viewing your own profile. You can edit all details except your email.</p>
+                  <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={startEditing}
+                    className="px-4 py-2.5 rounded-xl bg-[#c41e3a] text-white font-medium hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    Edit profile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirmOpen(true)}
+                    disabled={deleting}
+                    className="px-4 py-2.5 rounded-xl border border-red-300 bg-white text-red-600 font-medium hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-60"
+                  >
+                    {deleting ? "Deleting…" : "Delete profile"}
+                  </button>
+                </div>
+                </div>
+                {editError && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{editError}</p>}
+              </div>
+            ) : null}
+            {isOwner && (
+              <ConfirmModal
+                isOpen={deleteConfirmOpen}
+                onClose={() => setDeleteConfirmOpen(false)}
+                variant="delete"
+                title="Delete account"
+                message="Are you sure you want to delete your account?"
+                cancelLabel="Cancel"
+                confirmLabel="Delete"
+                onConfirm={handleDeleteProfileConfirm}
+                loading={deleting}
+              />
+            )}
+            {isOwner && editing ? (
+              <form onSubmit={handleSaveEdit} className="space-y-4">
+                <h2 className="text-lg font-bold text-stone-800">Edit your profile</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Name</label>
+                    <input name="name" type="text" defaultValue={donor.name} className={inputClass} required minLength={3} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Blood group</label>
+                    <select name="group" defaultValue={donor.group} className={inputClass} required>
+                      {BLOOD_GROUPS.map((g) => (
+                        <option key={g} value={g}>{g}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">City</label>
+                    <input name="city" type="text" defaultValue={donor.city} className={inputClass} required minLength={2} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Email (cannot be changed)</label>
+                    <input type="email" value={donor.email ?? ""} className={inputClass + " bg-stone-100 cursor-not-allowed"} readOnly disabled />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Phone number</label>
+                    <input name="phone1" type="tel" defaultValue={donor.phone1} className={inputClass} required minLength={11} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">Second phone (optional)</label>
+                    <input name="phone2" type="tel" defaultValue={donor.phone2} className={inputClass} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" name="phoneIsWhatsApp" id="phoneIsWhatsApp" defaultChecked className="rounded border-stone-300" />
+                  <label htmlFor="phoneIsWhatsApp" className="text-sm text-stone-600">Primary number is WhatsApp</label>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">About you</label>
+                  <textarea name="aboutDonor" defaultValue={donor.aboutDonor} className={inputClass} rows={3} placeholder="Optional" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Donation history</label>
+                  <p className="text-xs text-stone-500 mb-3">Add the date(s) you donated blood (optional)</p>
+                  <div className="space-y-3">
+                    {donationDates.map((date, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <input
+                          type="date"
+                          value={date}
+                          onChange={(e) => setDonationDateAt(index, e.target.value)}
+                          className={`${inputClass} flex-1 min-w-0`}
+                          max={new Date().toISOString().slice(0, 10)}
+                        />
+                        {donationDates.length > 1 ? (
+                          <button
+                            type="button"
+                            onClick={() => removeDonationDate(index)}
+                            className="shrink-0 flex items-center justify-center w-11 h-[50px] rounded-xl border border-stone-200 bg-white text-stone-500 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
+                            title="Remove date"
+                            aria-label="Remove date"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        ) : null}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addDonationDate}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-dashed border-stone-200 text-stone-500 hover:border-[#c41e3a]/50 hover:text-[#c41e3a] hover:bg-[#c41e3a]/5 transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span className="text-sm font-medium">Add another date</span>
+                    </button>
+                  </div>
+                </div>
+                {editError && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{editError}</p>}
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setEditing(false)} className="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-700 font-medium hover:bg-stone-50 cursor-pointer">
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={saving} className="px-4 py-2.5 rounded-xl bg-[#c41e3a] text-white font-medium hover:opacity-90 disabled:opacity-60 cursor-pointer">
+                    {saving ? "Saving…" : "Save changes"}
+                  </button>
+                </div>
+              </form>
+            ) : null}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Left: 3/4 */}
@@ -154,7 +391,9 @@ export default function DonorProfile({ donor, slug }: DonorProfileProps) {
                 {
                   label: "Contact",
                   value: hasContact ? "Available" : "Not shared",
-                  sub: phones.length ? `${phones.length} number(s)` : "—",
+                  sub: hasContact
+                    ? [phones.length ? `${phones.length} number(s)` : null, donor.email ? "Email" : null].filter(Boolean).join(", ") || "—"
+                    : "—",
                   icon: (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -208,9 +447,23 @@ export default function DonorProfile({ donor, slug }: DonorProfileProps) {
                   </span>
                   Contact Information
                 </h2>
-                {hasContact ? (
-                  <div className="space-y-4">
-                    {donor.phone1 && (
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-3 py-3 px-4 rounded-xl bg-stone-100/80 border border-stone-200">
+                    <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-sky-100 text-sky-600 shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-stone-500">Email</p>
+                      {donor.email ? (
+                        <a href={`mailto:${donor.email}`} className="font-bold text-stone-800 hover:underline break-all">{donor.email}</a>
+                      ) : (
+                        <span className="text-stone-500 italic">Not shared</span>
+                      )}
+                    </div>
+                  </div>
+                  {donor.phone1 ? (
                       <div className="flex flex-wrap items-center gap-3 py-3 px-4 rounded-xl bg-stone-100/80 border border-stone-200">
                         <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 shrink-0">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,28 +486,37 @@ export default function DonorProfile({ donor, slug }: DonorProfileProps) {
                           </svg>
                         </a>
                       </div>
-                    )}
-                    {donor.phone2 && (
-                      <div className="flex flex-wrap items-center gap-3 py-3 px-4 rounded-xl bg-stone-100/80 border border-stone-200">
-                        <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 shrink-0">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm text-stone-500">Phone Number</p>
-                          <a href={`tel:${donor.phone2}`} className="font-bold text-stone-800 hover:underline">{donor.phone2}</a>
-                        </div>
+                    ) : (
+                    <div className="flex flex-wrap items-center gap-3 py-3 px-4 rounded-xl bg-stone-100/80 border border-stone-200">
+                      <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 shrink-0">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-stone-500">Phone Number</p>
+                        <span className="text-stone-500 italic">Not shared</span>
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-stone-500 italic py-2">No contact information shared. Check back later.</p>
-                )}
+                    </div>
+                  )}
+                  {donor.phone2 && (
+                    <div className="flex flex-wrap items-center gap-3 py-3 px-4 rounded-xl bg-stone-100/80 border border-stone-200">
+                      <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 shrink-0">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-stone-500">Phone Number</p>
+                        <a href={`tel:${donor.phone2}`} className="font-bold text-stone-800 hover:underline">{donor.phone2}</a>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* About the donor */}
+            {/* About the donor – always show, fallback if empty */}
             <div
               className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden profile-card-hover profile-animate"
               style={{ animationDelay: "200ms" }}
@@ -269,12 +531,12 @@ export default function DonorProfile({ donor, slug }: DonorProfileProps) {
                   About the Donor
                 </h2>
                 <div className="rounded-xl bg-stone-100/80 border border-stone-200 p-4">
-                  <p className="text-stone-600 leading-relaxed">{FALLBACK_ABOUT}</p>
+                  <p className="text-stone-600 leading-relaxed">{donor.aboutDonor?.trim() || FALLBACK_ABOUT}</p>
                 </div>
               </div>
             </div>
 
-            {/* Donation history */}
+            {/* Donation history – always show, fallback if empty */}
             <div
               className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden profile-card-hover profile-animate"
               style={{ animationDelay: "250ms" }}
@@ -288,16 +550,43 @@ export default function DonorProfile({ donor, slug }: DonorProfileProps) {
                   </span>
                   Donation History
                 </h2>
-                <div className="rounded-xl bg-emerald-50/80 border border-emerald-100 p-4">
-                  <div className="flex items-center gap-2 text-stone-600 mb-1">
-                    <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-sm">Last Blood Donation</span>
+                {donor.donationHistory?.trim() ? (() => {
+                  const parts = donor.donationHistory.split(",").map((s) => s.trim()).filter(Boolean);
+                  const looksLikeDates = parts.every((p) => /^\d{4}-\d{2}-\d{2}$/.test(p));
+                  return (
+                    <div className="space-y-3">
+                      {parts.map((d, i) => {
+                        const display = looksLikeDates
+                          ? (() => {
+                              try {
+                                const date = new Date(d + "T12:00:00");
+                                return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+                              } catch {
+                                return d;
+                              }
+                            })()
+                          : d;
+                        return (
+                          <div
+                            key={i}
+                            className="rounded-xl bg-emerald-50/80 border border-emerald-100 p-4 flex items-center gap-3"
+                          >
+                            <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 shrink-0">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            </span>
+                            <p className="text-stone-700 font-medium">{display}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })() : (
+                  <div className="rounded-xl bg-emerald-50/80 border border-emerald-100 p-4">
+                    <p className="text-stone-600 leading-relaxed">{FALLBACK_DONATION_HISTORY}</p>
                   </div>
-                  <p className="text-lg font-bold text-emerald-800">Never donated</p>
-                  <p className="text-sm text-emerald-600/90 mt-0.5">First time donor</p>
-                </div>
+                )}
               </div>
             </div>
           </div>

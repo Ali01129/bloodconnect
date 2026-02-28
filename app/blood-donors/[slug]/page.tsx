@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import dbConnect from "@/lib/mongodb";
 import Donor from "@/lib/Donor";
 import { getIdFromSlug } from "@/lib/slug";
+import { getSessionDonorId } from "@/lib/auth";
 import DonorProfile from "./DonorProfile";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -15,6 +16,9 @@ interface DonorData {
   city: string;
   phone1?: string;
   phone2?: string;
+  email?: string;
+  aboutDonor?: string;
+  donationHistory?: string;
 }
 
 async function getDonor(slug: string): Promise<DonorData | null> {
@@ -24,7 +28,17 @@ async function getDonor(slug: string): Promise<DonorData | null> {
     await dbConnect();
     const doc = await Donor.findById(donorId).lean();
     if (!doc) return null;
-    const d = doc as { _id: { toString(): string }; name: string; group: string; city: string; phone1?: string; phone2?: string };
+    const d = doc as {
+      _id: { toString(): string };
+      name: string;
+      group: string;
+      city: string;
+      phone1?: string;
+      phone2?: string;
+      email?: string;
+      aboutDonor?: string;
+      donationHistory?: string;
+    };
     return {
       _id: d._id.toString(),
       name: d.name,
@@ -32,6 +46,9 @@ async function getDonor(slug: string): Promise<DonorData | null> {
       city: d.city,
       phone1: d.phone1,
       phone2: d.phone2,
+      email: d.email,
+      aboutDonor: d.aboutDonor,
+      donationHistory: d.donationHistory,
     };
   } catch {
     return null;
@@ -82,5 +99,7 @@ export default async function DonorPage({ params }: Props) {
   const { slug } = await params;
   const donor = await getDonor(slug);
   if (!donor) notFound();
-  return <DonorProfile donor={donor} slug={slug} />;
+  const sessionDonorId = await getSessionDonorId();
+  const isOwner = sessionDonorId !== null && sessionDonorId === donor._id;
+  return <DonorProfile donor={donor} slug={slug} isOwner={isOwner} />;
 }

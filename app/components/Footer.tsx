@@ -21,6 +21,12 @@ export default function Footer() {
             <p className="mt-4 text-xs font-medium uppercase tracking-wider text-red-400">
               Made by Ali Nawaz
             </p>
+            <a
+              href="mailto:chaudharyalinawazz@gmail.com"
+              className="mt-1 block text-xs font-medium uppercase tracking-wider text-red-400 hover:underline"
+            >
+              chaudharyalinawazz@gmail.com
+            </a>
             <div className="mt-3 flex items-center gap-2">
               <a
                 href="https://github.com/Ali01129"

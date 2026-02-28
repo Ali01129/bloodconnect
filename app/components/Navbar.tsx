@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import LoginModal from "./LoginModal";
+import ConfirmModal from "./ConfirmModal";
 
 interface NavbarProps {
   fetchData?: () => void;
@@ -39,14 +42,65 @@ function AddPersonIcon({ className }: { className?: string }) {
   );
 }
 
+function LoginIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path fillRule="evenodd" d="M12 2.25a4.5 4.5 0 0 0-4.5 4.5V9H6.75A2.25 2.25 0 0 0 4.5 11.25v6A2.25 2.25 0 0 0 6.75 19.5h10.5A2.25 2.25 0 0 0 19.5 17.25v-6A2.25 2.25 0 0 0 17.25 9H16.5V6.75a4.5 4.5 0 0 0-4.5-4.5Zm3 6.75h-6V6.75a3 3 0 1 1 6 0V9Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function LogoutIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  );
+}
+
 export default function Navbar({ fetchData }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const isHome = pathname === "/";
+
+  const fetchAuth = () => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => setIsLoggedIn(!!data.loggedIn))
+      .catch(() => setIsLoggedIn(false));
+  };
+
+  useEffect(() => {
+    fetchAuth();
+  }, []);
 
   const godash = () => {
     router.push("/");
     if (fetchData) fetchData();
+  };
+
+  const handleLogout = async () => {
+    setLogoutLoading(true);
+    try {
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (res.ok) {
+        setIsLoggedIn(false);
+        setLogoutOpen(false);
+        router.refresh();
+      }
+    } finally {
+      setLogoutLoading(false);
+    }
   };
 
   return (
@@ -72,6 +126,37 @@ export default function Navbar({ fetchData }: NavbarProps) {
             <HomeIcon className="size-5 shrink-0" />
             <span>Home</span>
           </button>
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={() => setLogoutOpen(true)}
+              className="flex items-center gap-2 text-black rounded-lg px-3 py-1.5 border border-transparent text-base max-[649px]:text-[13px] max-[543px]:text-[10px] hover:text-red-600 hover:bg-red-100 hover:border-red-300 transition-colors cursor-pointer"
+            >
+              <LogoutIcon className="size-5 shrink-0" />
+              <span>Logout</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setLoginOpen(true)}
+              className="flex items-center gap-2 text-black rounded-lg px-3 py-1.5 border border-transparent text-base max-[649px]:text-[13px] max-[543px]:text-[10px] hover:text-red-600 hover:bg-red-100 hover:border-red-300 transition-colors cursor-pointer"
+            >
+              <LoginIcon className="size-5 shrink-0" />
+              <span>Login</span>
+            </button>
+          )}
+          <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
+          <ConfirmModal
+            isOpen={logoutOpen}
+            onClose={() => setLogoutOpen(false)}
+            variant="logout"
+            title="Logout"
+            message="Are you sure you want to logout?"
+            cancelLabel="Cancel"
+            confirmLabel="Logout"
+            onConfirm={handleLogout}
+            loading={logoutLoading}
+          />
           <Link
             href="/register"
             className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-base max-[649px]:text-[13px] max-[543px]:text-[10px] cursor-pointer"

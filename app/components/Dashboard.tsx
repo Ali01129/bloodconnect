@@ -14,6 +14,7 @@ interface Donor {
   city: string;
   phone1?: string;
   phone2?: string;
+  email?: string;
 }
 
 export default function Dashboard() {
@@ -266,6 +267,7 @@ export default function Dashboard() {
                 city={element.city}
                 ph1={element.phone1}
                 ph2={element.phone2}
+                email={element.email}
                 index={index}
                 slug={getDonorSlug(element.name, element._id)}
               />
