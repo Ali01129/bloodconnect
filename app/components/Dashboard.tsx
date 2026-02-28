@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Card from "./Card";
 import CardSkeleton from "./CardSkeleton";
 import Navbar from "./Navbar";
@@ -98,10 +99,8 @@ export default function Dashboard() {
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-[#c41e3a]/5 via-transparent to-[#e63950]/5" />
           <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-16 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-[#c41e3a]/10 mb-6">
-              <svg className="w-8 h-8 md:w-10 md:h-10 text-[#c41e3a]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2c-.55 0-1 .45-1 1v1.5C9.24 5 7 7.24 7 10c0 2.76 2.24 5 5 5 .28 0 .5.22.5.5v5h-2v2h5v-2h-2v-4.5c0-.28.22-.5.5-.5 2.76 0 5-2.24 5-5 0-2.76-2.24-5-5-5.5V3c0-.55-.45-1-1-1z" />
-              </svg>
+            <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-[#c41e3a]/10 mb-6 p-2">
+              <Image src="/blood.png" alt="" width={48} height={48} className="w-10 h-10 md:w-12 md:h-12 object-contain" />
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-stone-800 tracking-tight">
               Connect with <span className="text-[#c41e3a]">Donors</span>

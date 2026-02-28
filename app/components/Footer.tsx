@@ -26,12 +26,6 @@ export default function Footer() {
               View Donors
             </Link>
             <Link
-              href="/home"
-              className="text-base font-medium text-stone-600 hover:text-[#c41e3a] transition-colors"
-            >
-              Home
-            </Link>
-            <Link
               href="/register"
               className="text-base font-medium text-stone-600 hover:text-[#c41e3a] transition-colors"
             >

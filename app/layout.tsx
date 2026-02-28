@@ -6,6 +6,7 @@ import UpdateRibbon from "./components/UpdateRibbon";
 export const metadata: Metadata = {
   title: "Blood Connect",
   description: "Blood donor registry - Every Drop Counts, Every Donor Matters",
+  icons: { icon: "/blood.png" },
 };
 
 export default function RootLayout({
@@ -26,7 +27,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased flex flex-col relative">
-        <UpdateRibbon />
+        {process.env.NEXT_PUBLIC_SHOW_UPDATE_RIBBON === "true" && <UpdateRibbon />}
         <main className="flex-1">{children}</main>
         <Footer />
       </body>
