@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Card from "./Card";
 import CardSkeleton from "./CardSkeleton";
@@ -22,6 +22,9 @@ export default function Dashboard() {
   const [toshow, setToshow] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bloodType, setBloodType] = useState("");
+  const [rh, setRh] = useState<"+" | "-" | "">("");
+  const [location, setLocation] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
@@ -74,19 +77,57 @@ export default function Dashboard() {
     }
   };
 
-  const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const applyFilters = async () => {
+    const hasFilters = bloodType || rh || location.trim();
+    if (!hasFilters) {
+      fetchData();
+      return;
+    }
     setLoading(true);
-    const buttonText = (event.target as HTMLButtonElement).textContent || "";
-    const response = await fetch("/api/getdonor/searchgroup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ group: buttonText }),
-    });
-    const data = await response.json();
-    setDonors(data.donors || []);
-    setLoading(false);
-    setPage(1);
+    setError(null);
+    try {
+      const response = await fetch("/api/getdonor/filterdonor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bloodType: bloodType || undefined,
+          rh: rh || undefined,
+          city: location.trim() || undefined,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError("Failed to load data");
+        setDonors([]);
+        return;
+      }
+      setDonors(data.donors || []);
+    } catch {
+      setError("Failed to load data");
+      setDonors([]);
+    } finally {
+      setLoading(false);
+      setPage(1);
+    }
   };
+
+  const clearFilters = () => {
+    setBloodType("");
+    setRh("");
+    setLocation("");
+    setPage(1);
+    fetchData();
+  };
+
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    const timer = setTimeout(() => applyFilters(), 300);
+    return () => clearTimeout(timer);
+  }, [bloodType, rh, location]);
 
   const nextClick = () => setPage((p) => p + 1);
   const previousClick = () => setPage((p) => (p > 1 ? p - 1 : p));
@@ -127,19 +168,80 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Blood type filters */}
-            <p className="mt-8 text-sm font-medium text-stone-500 uppercase tracking-wider">Filter by blood type</p>
-            <div className="mt-3 flex flex-wrap gap-2 justify-center">
-              {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((group) => (
-                <button
-                  key={group}
-                  type="button"
-                  onClick={handleClick}
-                  className="h-10 px-5 rounded-full text-sm font-semibold border-2 border-stone-200 bg-white text-stone-700 hover:border-[#c41e3a]/50 hover:bg-[#c41e3a]/5 hover:text-[#c41e3a] active:border-[#c41e3a] active:bg-[#c41e3a]/10 transition-all duration-200 cursor-pointer"
+          </div>
+        </div>
+
+        {/* Filter card */}
+        <div className="max-w-7xl mx-auto px-4 mt-8">
+          <div className="bg-white rounded-2xl border border-stone-200/80 shadow-sm p-5 md:p-6">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-stretch md:items-center">
+              {/* Blood group */}
+              <div className="flex flex-col gap-2 min-w-0 flex-1">
+                <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Blood group</label>
+                <select
+                  value={bloodType}
+                  onChange={(e) => setBloodType(e.target.value)}
+                  className="h-11 pl-5 pr-10 rounded-xl border border-stone-200 bg-white text-stone-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#c41e3a]/30 focus:border-[#c41e3a] transition-all cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23787571%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_1.25rem_center] bg-no-repeat"
                 >
-                  {group}
+                  <option value="">All</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="O">O</option>
+                  <option value="AB">AB</option>
+                </select>
+              </div>
+
+              {/* Rh factor */}
+              <div className="flex flex-col gap-2 min-w-0 flex-1">
+                <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Rh factor</label>
+                <div className="flex gap-3 h-11">
+                  <button
+                    type="button"
+                    onClick={() => setRh((prev) => (prev === "+" ? "" : "+"))}
+                    className={`w-[calc(50%-6px)] rounded-xl border-2 font-semibold transition-all cursor-pointer ${
+                      rh === "+"
+                        ? "border-[#c41e3a] bg-[#c41e3a]/10 text-[#c41e3a]"
+                        : "border-stone-200 bg-white text-stone-600 hover:border-[#c41e3a]/50 hover:bg-[#c41e3a]/5"
+                    }`}
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRh((prev) => (prev === "-" ? "" : "-"))}
+                    className={`w-[calc(50%-6px)] rounded-xl border-2 font-semibold transition-all cursor-pointer ${
+                      rh === "-"
+                        ? "border-[#c41e3a] bg-[#c41e3a]/10 text-[#c41e3a]"
+                        : "border-stone-200 bg-white text-stone-600 hover:border-[#c41e3a]/50 hover:bg-[#c41e3a]/5"
+                    }`}
+                  >
+                    −
+                  </button>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="flex flex-col gap-2 min-w-0 flex-1">
+                <label className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Location</label>
+                <input
+                  type="text"
+                  placeholder="City name..."
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="h-11 px-4 rounded-xl border border-stone-200 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#c41e3a]/30 focus:border-[#c41e3a] transition-all"
+                />
+              </div>
+
+              {/* Clear filters */}
+              <div className="flex flex-col gap-2 min-w-0 flex-1 md:pt-7">
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="h-11 w-full rounded-xl border-2 border-red-300 bg-red-100 text-red-600 font-semibold hover:bg-red-200 hover:border-red-400 transition-all cursor-pointer"
+                >
+                  Clear filters
                 </button>
-              ))}
+              </div>
             </div>
           </div>
         </div>
