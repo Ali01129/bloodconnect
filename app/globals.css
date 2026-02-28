@@ -50,7 +50,8 @@ body {
 
 /* Card WhatsApp button - complex pseudo-element styles */
 .btn-whatsapp {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   transition: all 0.2s ease-in;
   position: relative;
   overflow: hidden;
