@@ -15,10 +15,10 @@ const validations = [
     .isLength({ min: 11 }),
 ];
 
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const req = { body };
+    const data = await request.json();
+    const req = { body: data };
     await Promise.all(validations.map((v) => v.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -31,23 +31,23 @@ export async function POST(request) {
     await dbConnect();
 
     const donor = await Donor.findOne({
-      name: body.name,
-      group: body.group,
+      name: data.name,
+      group: data.group,
       $or: [
-        { phone1: body.phone1 },
-        { phone2: body.phone1 },
-        { phone1: body.phone2 },
-        { phone2: body.phone2 },
+        { phone1: data.phone1 },
+        { phone2: data.phone1 },
+        { phone1: data.phone2 },
+        { phone2: data.phone2 },
       ],
     });
 
     if (!donor) {
       const created = await Donor.create({
-        name: body.name,
-        group: body.group,
-        city: body.city,
-        phone1: body.phone1,
-        phone2: body.phone2,
+        name: data.name,
+        group: data.group,
+        city: data.city,
+        phone1: data.phone1,
+        phone2: data.phone2,
       });
       return NextResponse.json({ created });
     }

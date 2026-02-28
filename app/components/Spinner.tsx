@@ -1,8 +1,6 @@
-import "./spinner.css";
-
 export default function Spinner() {
   return (
-    <div className="loading my-5">
+    <div className="loading-spinner flex justify-center items-center my-5">
       <svg width="64px" height="48px">
         <polyline
           points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"

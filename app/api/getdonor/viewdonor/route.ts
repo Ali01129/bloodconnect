@@ -15,11 +15,12 @@ export async function POST() {
     const donors = await Donor.find({});
     return NextResponse.json({ donors });
   } catch (error) {
-    console.error("viewdonor error:", error.message || error);
+    const err = error as Error;
+    console.error("viewdonor error:", err.message || error);
     return NextResponse.json(
       {
         error: "Server error",
-        message: process.env.NODE_ENV === "development" ? error.message : undefined,
+        message: process.env.NODE_ENV === "development" ? err.message : undefined,
       },
       { status: 500 }
     );
