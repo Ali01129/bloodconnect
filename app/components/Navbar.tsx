@@ -16,8 +16,8 @@ export default function Navbar({ fetchData }: NavbarProps) {
   };
 
   return (
-    <div className="w-full my-2">
-      <nav className="flex items-center justify-between px-4">
+    <div className="w-full py-2 px-2">
+      <nav className="flex items-center justify-between max-w-7xl mx-auto">
         <button
           type="button"
           onClick={godash}

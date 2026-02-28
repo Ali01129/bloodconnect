@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Card from "./Card";
+import CardSkeleton from "./CardSkeleton";
 import Navbar from "./Navbar";
-import Spinner from "./Spinner";
 
 interface Donor {
   _id: string;
@@ -93,75 +93,112 @@ export default function Dashboard() {
   return (
     <>
       <Navbar fetchData={fetchData} />
-      <div className="w-full">
-        <div className="max-w-7xl mx-auto text-center text-black font-['Signika',sans-serif]">
-          <div className="text-6xl md:text-[100px] sm:text-[70px] max-[476px]:text-[47px] font-bold text-black no-underline hover:tracking-[3px] transition-[letter-spacing] duration-300 ease-in-out">
-            Blood Donors
-          </div>
-          <div className="mt-4">
-            <input
-              type="text"
-              placeholder="Search Donors"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-[30%] md:w-1/2 sm:w-[70%] max-[476px]:w-[80%] h-10 text-center rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="my-8 flex flex-wrap gap-2 justify-center">
-            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((group) => (
-              <button
-                key={group}
-                type="button"
-                onClick={handleClick}
-                className="h-11 max-[476px]:h-8 max-[476px]:text-xs border-none rounded bg-[#dfdede] mr-0.5 hover:bg-gray-200 active:bg-white px-4 py-2 transition-colors"
-              >
-                {group}
-              </button>
-            ))}
+      <div className="w-full pb-16">
+        {/* Hero section */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#c41e3a]/5 via-transparent to-[#e63950]/5" />
+          <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-16 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-[#c41e3a]/10 mb-6">
+              <svg className="w-8 h-8 md:w-10 md:h-10 text-[#c41e3a]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2c-.55 0-1 .45-1 1v1.5C9.24 5 7 7.24 7 10c0 2.76 2.24 5 5 5 .28 0 .5.22.5.5v5h-2v2h5v-2h-2v-4.5c0-.28.22-.5.5-.5 2.76 0 5-2.24 5-5 0-2.76-2.24-5-5-5.5V3c0-.55-.45-1-1-1z" />
+              </svg>
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-stone-800 tracking-tight">
+              Connect with <span className="text-[#c41e3a]">Donors</span>
+            </h1>
+            <p className="mt-3 text-stone-600 text-lg max-w-xl mx-auto">
+              Find blood donors in your area. Every drop saves a life.
+            </p>
+
+            {/* Search bar */}
+            <div className="mt-8 max-w-xl mx-auto">
+              <div className="relative">
+                <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search donors by name..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-stone-200 bg-white shadow-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#c41e3a]/30 focus:border-[#c41e3a] transition-all"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-stone-400">Press Enter</span>
+              </div>
+            </div>
+
+            {/* Blood type filters */}
+            <p className="mt-8 text-sm font-medium text-stone-500 uppercase tracking-wider">Filter by blood type</p>
+            <div className="mt-3 flex flex-wrap gap-2 justify-center">
+              {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((group) => (
+                <button
+                  key={group}
+                  type="button"
+                  onClick={handleClick}
+                  className="h-10 px-5 rounded-full text-sm font-semibold border-2 border-stone-200 bg-white text-stone-700 hover:border-[#c41e3a]/50 hover:bg-[#c41e3a]/5 hover:text-[#c41e3a] active:border-[#c41e3a] active:bg-[#c41e3a]/10 transition-all duration-200"
+                >
+                  {group}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+
         {error && (
-          <div className="max-w-[600px] mx-auto text-center px-4 py-3 rounded-lg bg-red-100 text-red-700">
+          <div className="max-w-[600px] mx-auto mt-8 text-center px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-700">
             {error}
           </div>
         )}
-        {loading && <Spinner />}
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {toshow.map((element, index) => (
-              <div key={element._id || index}>
-                <Card
-                  name={element.name}
-                  group={element.group}
-                  city={element.city}
-                  ph1={element.phone1}
-                  ph2={element.phone2}
-                  index={index}
-                />
-              </div>
-            ))}
+        {/* Donor cards grid */}
+        <div className="max-w-7xl mx-auto px-4 mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+            {loading ? (
+              Array.from({ length: 9 }).map((_, i) => <CardSkeleton key={i} />)
+            ) : (
+            toshow.map((element, index) => (
+              <Card
+                key={element._id || index}
+                name={element.name}
+                group={element.group}
+                city={element.city}
+                ph1={element.phone1}
+                ph2={element.phone2}
+                index={index}
+              />
+            ))
+            )}
           </div>
         </div>
-        <div className="max-w-7xl mx-auto flex justify-between px-4 my-6">
+
+        {/* Pagination */}
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 mt-10 py-6">
           <button
             type="button"
             disabled={page <= 1}
             onClick={previousClick}
-            className="px-4 py-2 rounded bg-gray-800 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm"
           >
-            &larr; Previous
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Previous
           </button>
+          <span className="text-sm text-stone-500 font-medium">
+            page {donors.length === 0 ? 1 : page} of {Math.max(1, Math.ceil(donors.length / 21))}
+          </span>
           <button
             type="button"
             disabled={donors.length <= page * 21}
             onClick={nextClick}
-            className="px-4 py-2 rounded bg-gray-800 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#c41e3a] text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#9a1830] transition-all shadow-md shadow-[#c41e3a]/25"
           >
-            Next &rarr;
+            Next
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
-        <div className="text-white text-center py-4">made by ali</div>
       </div>
     </>
   );

@@ -1,5 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import Footer from "./components/Footer";
+import UpdateRibbon from "./components/UpdateRibbon";
 
 export const metadata: Metadata = {
   title: "Blood Connect",
@@ -23,7 +25,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-[#f1f1f1] antialiased">{children}</body>
+      <body className="min-h-screen antialiased flex flex-col relative">
+        <UpdateRibbon />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }

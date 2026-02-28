@@ -1,9 +1,23 @@
 @import "tailwindcss";
 
+:root {
+  --blood-primary: #c41e3a;
+  --blood-primary-dark: #9a1830;
+  --blood-primary-light: #e63950;
+  --blood-warm: #b91c1c;
+  --blood-muted: #fef2f2;
+  --blood-surface: #fdf8f8;
+  --blood-card-bg: #ffffff;
+  --blood-text: #1c1917;
+  --blood-text-muted: #78716c;
+}
+
 body {
   font-family: var(--font-signika);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(180deg, #fdf8f8 0%, #fef2f2 50%, #fef2f2 100%);
+  min-height: 100vh;
 }
 
 /* Spinner animation */
@@ -15,11 +29,11 @@ body {
 }
 
 .loading-spinner svg polyline#back {
-  stroke: #ff4d5033;
+  stroke: #c41e3a33;
 }
 
 .loading-spinner svg polyline#front {
-  stroke: #ff4d4f;
+  stroke: var(--blood-primary);
   stroke-dasharray: 48, 144;
   stroke-dashoffset: 192;
   animation: dash_682 1.4s linear infinite;
