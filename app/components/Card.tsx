@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 interface CardProps {
   name: string;
   group: string;
@@ -5,19 +7,23 @@ interface CardProps {
   ph1?: string;
   ph2?: string;
   index?: number;
+  slug: string;
 }
 
-export default function Card({ name, group, city, ph1 = "", ph2 = "", index }: CardProps) {
-  const gowhat = () => {
+export default function Card({ name, group, city, ph1 = "", ph2 = "", index, slug }: CardProps) {
+  const gowhat = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (ph1) window.open(`https://wa.me/${ph1}`, "_blank");
   };
 
   const phones = [ph1, ph2].filter(Boolean).join(" • ");
 
   return (
-    <div
+    <Link
+      href={`/blood-donors/${slug}`}
       key={index}
-      className="group w-full font-['Signika',sans-serif] bg-white rounded-2xl border border-stone-200/80 shadow-sm hover:shadow-lg hover:shadow-[#c41e3a]/5 hover:border-[#c41e3a]/20 transition-all duration-300 overflow-hidden"
+      className="group block w-full font-['Signika',sans-serif] bg-white rounded-2xl border border-stone-200/80 shadow-sm hover:shadow-lg hover:shadow-[#c41e3a]/5 hover:border-[#c41e3a]/20 transition-all duration-300 overflow-hidden"
     >
       {/* Blood type accent bar */}
       <div className="h-1.5 bg-gradient-to-r from-[#c41e3a] to-[#e63950]" />
@@ -27,8 +33,8 @@ export default function Card({ name, group, city, ph1 = "", ph2 = "", index }: C
         <div className="flex items-start justify-between gap-3 mb-4">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-600">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
             </svg>
             {city || "Unknown"}
           </span>
@@ -54,7 +60,7 @@ export default function Card({ name, group, city, ph1 = "", ph2 = "", index }: C
           </p>
         )}
 
-        {/* WhatsApp CTA */}
+        {/* WhatsApp CTA - stops propagation so clicking doesn't navigate */}
         <button
           type="button"
           onClick={gowhat}
@@ -67,6 +73,6 @@ export default function Card({ name, group, city, ph1 = "", ph2 = "", index }: C
           {ph1 ? "Contact on WhatsApp" : "No contact"}
         </button>
       </div>
-    </div>
+    </Link>
   );
 }

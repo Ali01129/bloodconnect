@@ -5,6 +5,7 @@ import Image from "next/image";
 import Card from "./Card";
 import CardSkeleton from "./CardSkeleton";
 import Navbar from "./Navbar";
+import { getDonorSlug } from "@/lib/slug";
 
 interface Donor {
   _id: string;
@@ -266,6 +267,7 @@ export default function Dashboard() {
                 ph1={element.phone1}
                 ph2={element.phone2}
                 index={index}
+                slug={getDonorSlug(element.name, element._id)}
               />
             ))
             )}

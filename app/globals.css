@@ -108,3 +108,93 @@ body {
 .btn-whatsapp:active {
   box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
 }
+
+/* Donor profile page – modern interactions */
+@keyframes profile-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes profile-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes blood-pulse {
+  0%, 100% {
+    box-shadow: 0 10px 40px -10px rgba(196, 30, 58, 0.35);
+  }
+  50% {
+    box-shadow: 0 14px 48px -8px rgba(196, 30, 58, 0.45);
+  }
+}
+
+@keyframes copy-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-in {
+  animation: toast-in 0.25s ease-out forwards;
+}
+
+.profile-animate {
+  animation: profile-fade-up 0.5s ease-out forwards;
+}
+
+.profile-animate-side {
+  animation: profile-scale-in 0.45s ease-out forwards;
+}
+
+.profile-card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.profile-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(196, 30, 58, 0.06);
+}
+
+.blood-badge-hero {
+  animation: blood-pulse 2.5s ease-in-out infinite;
+}
+
+.copy-pop {
+  animation: copy-pop 0.35s ease-out;
+}
+
+.back-link-hover svg {
+  transition: transform 0.2s ease;
+}
+.back-link-hover:hover svg {
+  transform: translateX(-3px);
+}
