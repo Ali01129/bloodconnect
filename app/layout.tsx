@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Footer from "./components/Footer";
+import GoogleAnalytics from "./components/GoogleAnalytics";
 import UpdateRibbon from "./components/UpdateRibbon";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bloodconnect.org";
@@ -109,6 +110,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased flex flex-col relative">
+        <GoogleAnalytics />
         {process.env.NEXT_PUBLIC_SHOW_UPDATE_RIBBON === "true" && <UpdateRibbon />}
         <main className="flex-1">{children}</main>
         <Footer />
